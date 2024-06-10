@@ -104,12 +104,23 @@ Resources:
     Properties:
       TableName: BoxDetectionTable
       AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
         - AttributeName: pictureId
           AttributeType: S
       KeySchema:
-        - AttributeName: pictureId
+        - AttributeName: id
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
+      GlobalSecondaryIndexes:
+        - IndexName: IdAndPictureIdIndex
+          KeySchema:
+            - AttributeName: id
+              KeyType: HASH
+            - AttributeName: pictureId
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
 
   DeepLarvaS3Bucket:
     Type: AWS::S3::Bucket
