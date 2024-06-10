@@ -5,15 +5,13 @@ Description: >
 
   Sample SAM Template for deep-larva-server
 
-# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
     Timeout: 30
     MemorySize: 256
-
-    # You can add LoggingConfig parameters such as the Logformat, Log Group, and SystemLogLevel or ApplicationLogLevel. Learn more here https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html#sam-function-loggingconfig.
     LoggingConfig:
       LogFormat: JSON
+
 Resources:
   DeepLarvaFunction:
     Type: AWS::Serverless::Function
@@ -39,6 +37,8 @@ Resources:
     DependsOn: ApiCWLRoleArn
     Properties:
       StageName: dev
+      Auth:
+        ApiKeyRequired: true
       Cors:
         AllowMethods: "'*'"
         AllowHeaders: "'*'"
@@ -54,6 +54,20 @@ Resources:
     Properties:
       CloudWatchRoleArn: !GetAtt CloudWatchRole.Arn
 
+  CloudWatchRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Action: "sts:AssumeRole"
+          Effect: Allow
+          Principal:
+            Service: apigateway.amazonaws.com
+      Path: /
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+
   PictureTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -61,7 +75,18 @@ Resources:
       AttributeDefinitions:
         - AttributeName: id
           AttributeType: S
+        - AttributeName: deviceId
+          AttributeType: S
       KeySchema:
         - AttributeName: id
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
+      GlobalSecondaryIndexes:
+        - IndexName: IdAndDeviceIdIndex
+          KeySchema:
+            - AttributeName: id
+              KeyType: HASH
+            - AttributeName: deviceId
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
