@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run Debug",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/deep_larva_function/local.py",
+      "console": "integratedTerminal",
+      "python": "${workspaceFolder}/venv/bin/python"
+    }
+  ]
+}
