@@ -24,6 +24,8 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: PictureTable
+        - DynamoDBCrudPolicy:
+            TableName: BoxDetectionTable
       Events:
         ApiGateway:
           Type: "Api"
@@ -48,6 +50,12 @@ Resources:
           MetricsEnabled: True
           ResourcePath: "/*"
           HttpMethod: "*"
+      # DefinitionBody:
+      #   x-amazon-apigateway-request-validators:
+      #     defaultBody:
+      #       validateRequestBody: true
+      #       allowUnknownBody: false
+      #       requestBodySize: 10485760
 
   ApiCWLRoleArn:
     Type: AWS::ApiGateway::Account
@@ -90,3 +98,20 @@ Resources:
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
+
+  BoxDetectionTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: BoxDetectionTable
+      AttributeDefinitions:
+        - AttributeName: pictureId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pictureId
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  DeepLarvaS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: deep-larva-storage

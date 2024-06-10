@@ -2,7 +2,7 @@ import os
 from fastapi.responses import JSONResponse
 from fastapi import APIRouter, File, UploadFile, Body
 
-from src.app.drivers import dynamodb
+from src.app.aws import dynamodb, s3
 from src.domain.entity.Picture import Picture
 from src.domain.request.PictureDTO import PictureDTO
 from src.services.PictureService import PictureService
@@ -19,7 +19,7 @@ async def hello_world():
     return {}
 
 
-@router.post("/hello", response_model=PictureDTO, tags=["Picture Management"])
+@router.post("/picture", response_model=PictureDTO, tags=["Picture Management"])
 async def save(picture: PictureDTO = Body(...)):
     service.save(picture=Picture(
         deviceId=picture.deviceId,
@@ -28,14 +28,16 @@ async def save(picture: PictureDTO = Body(...)):
     return picture
 
 
-@router.post("/upload-bitmap")
-async def upload_bitmap(file: UploadFile = File(...)):
-    if file.content_type != "image/bmp":
+@router.post("/bitmap/{pictureId}")
+async def upload_bitmap(pictureId: int, file: UploadFile = File(...)):
+    if file.content_type != "image/png":
         return JSONResponse(status_code=400, content={"message": "Only BMP files are allowed."})
 
     file_location = os.path.join(UPLOAD_DIR, file.filename)
     with open(file_location, "wb") as f:
         f.write(await file.read())
+    s3.upload_file(file_location, 'deep-larva-storage', file.filename)
+    os.remove(file_location)
 
     return {"message": f"File '{file.filename}' uploaded successfully."}
 
