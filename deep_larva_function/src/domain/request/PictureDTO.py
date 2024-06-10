@@ -3,16 +3,31 @@ from pydantic import BaseModel, Field
 
 
 class BoxDTO(BaseModel):
-    v1: int = Field(default=1)
-    v2: int = Field(default=1)
-    v3: int = Field(default=1)
-    v4: int = Field(default=1)
+    id: str = Field()
+    pictureId: int = Field()
+    v1: int = Field()
+    v2: int = Field()
+    v3: int = Field()
+    v4: int = Field()
 
 
 class PictureDTO(BaseModel):
-    id: str = Field(default="1234")
-    deviceId: str = Field(default="1234")
+    id: int = Field()
+    uuid: str = Field()
+    deviceId: str = Field()
+    filePath: str = Field()
+    thumbnailPath: str = Field()
+    processedFilePath: str = Field()
+    hasMetadata: bool = Field()
+    syncWithCloud: bool = Field()
+    count: int = Field()
+    time: int = Field()
+    timestamp: int = Field()
+
+
+class SavePictureDTO(BaseModel):
+    picture: PictureDTO
     boxes: List[BoxDTO]
 
 
-__all__ = ['PictureDTO']
+__all__ = ['SavePictureDTO']
