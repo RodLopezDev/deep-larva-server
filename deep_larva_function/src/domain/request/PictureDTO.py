@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 
 
 class BoxDTO(BaseModel):
-    id: str = Field()
+    id: int = Field()
     pictureId: int = Field()
     v1: int = Field()
     v2: int = Field()

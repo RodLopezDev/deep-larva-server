@@ -1,3 +1,4 @@
+from typing import Optional
 from src.domain.entity.Picture import Picture
 
 
@@ -10,7 +11,7 @@ class PictureService():
         self.repository.put_item(Item=picture.dict())
         return picture
 
-    def get_by_id(self, pictureId: str) -> Picture | None:
+    def get_by_id(self, pictureId: str) -> Optional[Picture]:
         response = self.repository.get_item(Key={'id': pictureId})
         return response.get('Item')
 

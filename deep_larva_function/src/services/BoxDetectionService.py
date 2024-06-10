@@ -1,3 +1,4 @@
+from typing import Optional
 from src.domain.entity.BoxDetection import BoxDetection
 
 
@@ -9,7 +10,7 @@ class BoxDetectionService():
         self.repository.put_item(Item=box.dict())
         return box
 
-    def get_by_id(self, id: str) -> BoxDetection | None:
+    def get_by_id(self, id: str) -> Optional[BoxDetection]:
         response = self.repository.get_item(Key={'id': id})
         return response.get('Item')
 
