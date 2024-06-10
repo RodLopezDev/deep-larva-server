@@ -1,45 +1,117 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: >
   deep-larva-server
 
   Sample SAM Template for deep-larva-server
 
-# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
-    Timeout: 3
-    MemorySize: 128
-
-    # You can add LoggingConfig parameters such as the Logformat, Log Group, and SystemLogLevel or ApplicationLogLevel. Learn more here https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html#sam-function-loggingconfig.
+    Timeout: 30
+    MemorySize: 256
     LoggingConfig:
       LogFormat: JSON
+
 Resources:
-  HelloWorldFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+  DeepLarvaFunction:
+    Type: AWS::Serverless::Function
     Properties:
-      CodeUri: hello_world/
+      CodeUri: deep_larva_function/
       Handler: app.lambda_handler
       Runtime: python3.9
       Architectures:
-      - x86_64
+        - x86_64
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: PictureTable
+        - DynamoDBCrudPolicy:
+            TableName: BoxDetectionTable
       Events:
-        HelloWorld:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+        ApiGateway:
+          Type: "Api"
           Properties:
-            Path: /hello
-            Method: get
+            Path: /{proxy+}
+            Method: ANY
+            RestApiId: !Ref DeepLarvaApi
 
-Outputs:
-  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  HelloWorldApi:
-    Description: API Gateway endpoint URL for Prod stage for Hello World function
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  HelloWorldFunction:
-    Description: Hello World Lambda Function ARN
-    Value: !GetAtt HelloWorldFunction.Arn
-  HelloWorldFunctionIamRole:
-    Description: Implicit IAM Role created for Hello World function
-    Value: !GetAtt HelloWorldFunctionRole.Arn
+  DeepLarvaApi:
+    Type: "AWS::Serverless::Api"
+    DependsOn: ApiCWLRoleArn
+    Properties:
+      StageName: dev
+      Auth:
+        ApiKeyRequired: true
+      Cors:
+        AllowMethods: "'*'"
+        AllowHeaders: "'*'"
+        AllowOrigin: "'*'"
+      MethodSettings:
+        - LoggingLevel: INFO
+          MetricsEnabled: True
+          ResourcePath: "/*"
+          HttpMethod: "*"
+      # DefinitionBody:
+      #   x-amazon-apigateway-request-validators:
+      #     defaultBody:
+      #       validateRequestBody: true
+      #       allowUnknownBody: false
+      #       requestBodySize: 10485760
+
+  ApiCWLRoleArn:
+    Type: AWS::ApiGateway::Account
+    Properties:
+      CloudWatchRoleArn: !GetAtt CloudWatchRole.Arn
+
+  CloudWatchRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Action: "sts:AssumeRole"
+          Effect: Allow
+          Principal:
+            Service: apigateway.amazonaws.com
+      Path: /
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+
+  PictureTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: PictureTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: deviceId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+      GlobalSecondaryIndexes:
+        - IndexName: IdAndDeviceIdIndex
+          KeySchema:
+            - AttributeName: id
+              KeyType: HASH
+            - AttributeName: deviceId
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+  BoxDetectionTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: BoxDetectionTable
+      AttributeDefinitions:
+        - AttributeName: pictureId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pictureId
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  DeepLarvaS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: deep-larva-storage

@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from hello_world import app
+from deep_larva_function import app
 
 
 @pytest.fixture()
