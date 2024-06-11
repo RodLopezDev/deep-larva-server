@@ -2,10 +2,12 @@ import uuid
 
 from src.domain.entity.Picture import Picture
 from src.domain.entity.BoxDetection import BoxDetection
+from src.domain.response.NewPictureResponse import NewPictureResponse
 
 from src.domain.request.PictureDTO import SavePictureDTO, BoxDTO
 
 from src.services.PictureService import PictureService
+from src.services.DocumentService import DocumentService
 from src.services.BoxDetectionService import BoxDetectionService
 
 
@@ -13,12 +15,16 @@ class PictureController:
     def __init__(
         self,
         pictureService: PictureService,
-        boxService: BoxDetectionService
+        boxService: BoxDetectionService,
+        documentService: DocumentService
     ):
         self.picture = pictureService
         self.boxes = boxService
+        self.document = documentService
 
-    def save(self, dto: SavePictureDTO):
+    def save(self, dto: SavePictureDTO) -> NewPictureResponse:
+        bucket_name = "deep-larva-storage"
+
         picture = self.picture.save(picture=Picture(
             id=dto.picture.uuid,
             deviceId=dto.picture.deviceId,
@@ -43,7 +49,20 @@ class PictureController:
         for box in boxes:
             self.boxes.save(box)
 
-        return picture
+        originalFilePresignedUrl = self.document.create_presigned_upload_url(
+            bucket_name,
+            f"{picture.id}-file.png"
+        )
+        processedFilePresignedUrl = self.document.create_presigned_upload_url(
+            bucket_name,
+            f"{picture.id}-processed.png"
+        )
+
+        return NewPictureResponse(
+            id=picture.id,
+            originalFileURL=originalFilePresignedUrl,
+            originalFileURL=processedFilePresignedUrl
+        )
 
 
 __all__ = ['PictureController']
