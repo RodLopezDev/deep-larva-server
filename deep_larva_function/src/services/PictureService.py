@@ -12,10 +12,12 @@ class PictureService():
         return picture
 
     def get_by_id(self, pictureId: str) -> Optional[Picture]:
-        response = self.repository.get_item(Key={'id': pictureId})
-        return response.get('Item')
+        try:
+            response = self.repository.get_item(Key={'id': pictureId})
+            return response.get('Item')
+        except:
+            return None
 
-    def update_item(self, pictureId, picture: Picture) -> Picture:
-        picture.id = pictureId
+    def update_item(self, picture: Picture) -> Picture:
         self.repository.put_item(Item=picture)
         return picture

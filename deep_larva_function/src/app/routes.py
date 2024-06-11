@@ -33,7 +33,7 @@ async def save(dto: SavePictureDTO = Body(...)):
 
 
 @router.post("/bitmap/{type}/{pictureId}", tags=["Picture Management"])
-async def upload_bitmap(type: str, pictureId: int, file: UploadFile = File(...)):
+async def upload_bitmap(type: str, pictureId: str, file: UploadFile = File(...)):
     if file.content_type != "image/png":
         return JSONResponse(status_code=400, content={"message": "Only BMP files are allowed."})
     if type != 'file' and type != 'processed':
@@ -43,17 +43,19 @@ async def upload_bitmap(type: str, pictureId: int, file: UploadFile = File(...))
         return JSONResponse(status_code=404, content={"message": "Picture not found."})
 
     file_location = os.path.join(UPLOAD_DIR, file.filename)
+    bucket_name = "deep-larva-storage"
+    file_s3_name = f"{pictureId}-{type}.png"
     with open(file_location, "wb") as f:
         f.write(await file.read())
-    s3.upload_file(file_location, 'deep-larva-storage', file.filename)
+    s3.upload_file(file_location, bucket_name, file_s3_name)
     os.remove(file_location)
 
     if (type == 'file'):
-        picture.pathFile = 'file_location'
+        picture['pathFile'] = f"s3://{bucket_name}/{file_s3_name}"
     elif (type == 'processed'):
-        picture.pathProcessed = 'file_location'
+        picture['pathProcessed'] = f"s3://{bucket_name}/{file_s3_name}"
 
-    pService.update_item(pictureId, picture)
+    pService.update_item(picture)
     return {"message": f"File '{file.filename}' uploaded successfully."}
 
 __all__ = ["router"]
