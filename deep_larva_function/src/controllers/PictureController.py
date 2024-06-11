@@ -24,15 +24,15 @@ class PictureController:
 
     def save(self, dto: SavePictureDTO) -> NewPictureResponse:
         bucket_name = "deep-larva-storage"
-        fileRelativePath = f"{dto.picture.id}-file.png"
-        fileRelativePath = f"{dto.picture.id}-processed.png"
+        fileRelativePath = f"{dto.picture.uuid}-file.png"
+        processedfileRelativePath = f"{dto.picture.uuid}-processed.png"
 
         picture = self.picture.save(picture=Picture(
             id=dto.picture.uuid,
             deviceId=dto.picture.deviceId,
             count=dto.picture.count,
             pathFile=f"s3://{bucket_name}/{fileRelativePath}",
-            pathProcessed=f"s3://{bucket_name}/{fileRelativePath}",
+            pathProcessed=f"s3://{bucket_name}/{processedfileRelativePath}",
             time=dto.picture.time,
             timestamp=dto.picture.timestamp
         ))
@@ -57,7 +57,7 @@ class PictureController:
         )
         processedFilePresignedUrl = self.document.create_presigned_upload_url(
             bucket_name,
-            fileRelativePath
+            processedfileRelativePath
         )
 
         return NewPictureResponse(

@@ -26,6 +26,8 @@ Resources:
             TableName: PictureTable
         - DynamoDBCrudPolicy:
             TableName: BoxDetectionTable
+        - S3CrudPolicy:
+            BucketName: deep-larva-storage
       Events:
         ApiGateway:
           Type: "Api"
