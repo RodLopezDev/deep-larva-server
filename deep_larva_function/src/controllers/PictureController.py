@@ -63,7 +63,8 @@ class PictureController:
         return NewPictureResponse(
             id=picture.id,
             originalFileURL=originalFilePresignedUrl,
-            processedFileURL=processedFilePresignedUrl
+            processedFileURL=processedFilePresignedUrl,
+            circuitBreak=True
         )
 
 
