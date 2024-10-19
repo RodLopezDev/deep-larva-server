@@ -6,4 +6,4 @@ class NewPictureResponse(BaseModel):
     id: str = Field()
     originalFileURL: str = Field()
     processedFileURL: str = Field()
-    
+    circuitBreak: bool = Field()

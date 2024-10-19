@@ -5,6 +5,7 @@ from src.domain.entity.BoxDetection import BoxDetection
 from src.domain.response.NewPictureResponse import NewPictureResponse
 
 from src.domain.request.PictureDTO import SavePictureDTO, BoxDTO
+from src.domain.constants.featureFlags import IS_ENABLED_BUCKET
 
 from src.services.PictureService import PictureService
 from src.services.DocumentService import DocumentService
@@ -23,6 +24,14 @@ class PictureController:
         self.document = documentService
 
     def save(self, dto: SavePictureDTO) -> NewPictureResponse:
+        if not IS_ENABLED_BUCKET:
+            return NewPictureResponse(
+                id="",
+                originalFileURL="",
+                processedFileURL="",
+                circuitBreak=True
+            )
+
         bucket_name = "deep-larva-storage"
         fileRelativePath = f"{dto.picture.uuid}-file.png"
         processedfileRelativePath = f"{dto.picture.uuid}-processed.png"
@@ -63,7 +72,8 @@ class PictureController:
         return NewPictureResponse(
             id=picture.id,
             originalFileURL=originalFilePresignedUrl,
-            processedFileURL=processedFilePresignedUrl
+            processedFileURL=processedFilePresignedUrl,
+            circuitBreak=False
         )
 
 
