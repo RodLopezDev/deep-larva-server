@@ -41,32 +41,33 @@ class CameraConfig(BaseModel):
     shutterSpeed: int
 
 
-@router.get("/v1/camera/{device}/{model}/config", response_model=CameraConfig)
-async def get_camera_config(model: str, device: str, request: Request):
+@router.get("/v1/camera/{brandh}/{model}/config", response_model=CameraConfig)
+async def get_camera_config(brand: str, model: str, request: Request):
     api_key = request.headers.get("x-api-key")
     if not api_key or api_key != api_server_key:
         raise HTTPException(status_code=401, detail="Unauthorized")
-    if model == "SAMSUNG" and device == "SM-A536E":
+
+    if brand == "SAMSUNG" and model == "SM-A536E":
         return CameraConfig(
             brand="SAMSUNG", model="SM-A536E", iso=100, exposure=-2, shutterSpeed=20
         )
-    if model == "SAMSUNG" and device == "SM-G781B":
+    if brand == "SAMSUNG" and model == "SM-G781B":
         return CameraConfig(
             brand="SAMSUNG", model="SM-G781B", iso=80, exposure=-2, shutterSpeed=17
         )
-    if model == "SAMSUNG" and device == "SM-A325M":
+    if brand == "SAMSUNG" and model == "SM-A325M":
         return CameraConfig(
             brand="SAMSUNG", model="SM-A325M", iso=100, exposure=-2, shutterSpeed=20
         )
-    if model == "SAMSUNG" and device == "SM-A305G":
+    if brand == "SAMSUNG" and model == "SM-A305G":
         return CameraConfig(
             brand="SAMSUNG", model="SM-A305G", iso=200, exposure=-2, shutterSpeed=7
         )
-    if model == "SAMSUNG" and device == "SM-G980F":
+    if brand == "SAMSUNG" and model == "SM-G980F":
         return CameraConfig(
             brand="SAMSUNG", model="SM-G980F", iso=50, exposure=-2, shutterSpeed=20
         )
-    if model == "HONOR" and device == "WDY-LX3":
+    if brand == "HONOR" and model == "WDY-LX3":
         return CameraConfig(
             brand="HONOR", model="WDY-LX3", iso=160, exposure=0, shutterSpeed=17
         )
