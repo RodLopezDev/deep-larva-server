@@ -52,6 +52,7 @@ Resources:
           ## Environment variables
           LAMBDA_ENV: True
           PRODUCTION: !FindInMap [EnvironmentMap, !Ref Stage, production]
+          API_SERVER_KEY: "s9kxeuFJgqrr_LZJhxzLxvF2Wnx0QPH78EumUDE8FQA" # TODO: Temporal apikeys
       Events:
         ApiGateway:
           Type: "Api"

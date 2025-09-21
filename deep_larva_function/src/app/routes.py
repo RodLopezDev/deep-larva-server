@@ -1,7 +1,7 @@
 import os
 import uuid
 
-from fastapi import APIRouter, Body, File, UploadFile
+from fastapi import APIRouter, Body, File, HTTPException, Request, UploadFile
 from fastapi.responses import JSONResponse
 from src.app.aws import dynamodb, s3
 from src.controllers.PictureController import PictureController
@@ -19,13 +19,21 @@ bdService = BoxDetectionService(dynamodb)
 dService = DocumentService(s3)
 controller = PictureController(pService, bdService, dService)
 
-UPLOAD_DIR = "/tmp/uploaded_files"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-
 
 @router.get("/", tags=["Home"])
 async def home():
     return {"status": "OK"}
+
+
+api_server_key = os.getenv("API_SERVER_KEY")
+
+
+@router.get("/camera/{device}/{model}/config")
+async def get_camera_config(model: str, device: str, request: Request):
+    api_key = request.headers.get("x-api-key")
+    if not api_key or api_key != api_server_key:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return {"model": model, "device": device}
 
 
 @router.post("/picture", response_model=NewPictureResponse, tags=["Picture Management"])
