@@ -1,4 +1,5 @@
 from typing import List
+
 from pydantic import BaseModel, Field
 
 
@@ -30,4 +31,4 @@ class SavePictureDTO(BaseModel):
     boxes: List[BoxDTO]
 
 
-__all__ = ['SavePictureDTO']
+__all__ = ["SavePictureDTO"]

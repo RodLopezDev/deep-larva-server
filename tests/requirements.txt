@@ -1,3 +1,7 @@
+# Base dependencies
+aws-lambda-powertools[all]
+
+# Testing dependencies
 pytest
-boto3
-requests
+pytest-mock
+pytest-cov

@@ -14,9 +14,22 @@ parallel = true
 lint = true
 
 [default.deploy.parameters]
+stack_name = "deep-larva-server-local"
 capabilities = "CAPABILITY_IAM"
 confirm_changeset = true
-resolve_s3 = true
+resolve_s3 = false
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-cnszwzvqayyy"
+s3_prefix = "deep-larva-server-s3"
+parameter_overrides = "Stage=local"
+
+[production.deploy.parameters]
+stack_name = "deep-larva-server"
+capabilities = "CAPABILITY_IAM"
+confirm_changeset = true
+resolve_s3 = false
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-cnszwzvqayyy"
+s3_prefix = "deep-larva-server-s3"
+parameter_overrides = "Stage=production"
 
 [default.package.parameters]
 resolve_s3 = true
