@@ -16,8 +16,8 @@ Resources:
   DeepLarvaFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: deep_larva_function/
-      Handler: app.lambda_handler
+      CodeUri: deep_larva_function
+      Handler: handler.lambda_handler
       Runtime: python3.9
       Architectures:
         - x86_64
