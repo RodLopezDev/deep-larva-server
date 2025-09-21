@@ -41,7 +41,7 @@ class CameraConfig(BaseModel):
     shutterSpeed: int
 
 
-@router.get("/v1/camera/{brandh}/{model}/config", response_model=CameraConfig)
+@router.get("/v1/camera/{brand}/{model}/config", response_model=CameraConfig)
 async def get_camera_config(brand: str, model: str, request: Request):
     api_key = request.headers.get("x-api-key")
     if not api_key or api_key != api_server_key:
