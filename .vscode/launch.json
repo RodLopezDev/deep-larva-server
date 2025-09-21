@@ -5,7 +5,7 @@
       "name": "Run Debug In Mac",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/deep_larva_function/local.py",
+      "program": "${workspaceFolder}/deep_larva_function/handler.py",
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}",
       "python": "${workspaceFolder}/venv/bin/python"
