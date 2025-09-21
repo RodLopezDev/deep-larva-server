@@ -1,19 +1,17 @@
 import os
 import uuid
+
+from fastapi import APIRouter, Body, File, UploadFile
 from fastapi.responses import JSONResponse
-from fastapi import APIRouter, File, UploadFile, Body
-
 from src.app.aws import dynamodb, s3
-from src.services.PictureService import PictureService
-from src.services.DocumentService import DocumentService
-from src.services.BoxDetectionService import BoxDetectionService
-
 from src.controllers.PictureController import PictureController
-
-from src.domain.entity.Picture import Picture
 from src.domain.entity.BoxDetection import BoxDetection
-from src.domain.request.PictureDTO import SavePictureDTO, BoxDTO
+from src.domain.entity.Picture import Picture
+from src.domain.request.PictureDTO import BoxDTO, SavePictureDTO
 from src.domain.response.NewPictureResponse import NewPictureResponse
+from src.services.BoxDetectionService import BoxDetectionService
+from src.services.DocumentService import DocumentService
+from src.services.PictureService import PictureService
 
 router = APIRouter()
 pService = PictureService(dynamodb)
@@ -25,14 +23,15 @@ UPLOAD_DIR = "/tmp/uploaded_files"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
-@router.get('/', tags=["Home"])
+@router.get("/", tags=["Home"])
 async def home():
-    return {'status': 'OK'}
+    return {"status": "OK"}
 
 
 @router.post("/picture", response_model=NewPictureResponse, tags=["Picture Management"])
 async def save(dto: SavePictureDTO = Body(...)):
     return controller.save(dto)
+
 
 # @router.post("/bitmap/{type}/{pictureId}", tags=["Picture Management"])
 # async def upload_bitmap(type: str, pictureId: str, file: UploadFile = File(...)):

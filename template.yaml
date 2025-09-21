@@ -5,10 +5,27 @@ Description: >
 
   Sample SAM Template for deep-larva-server
 
+Parameters:
+  Stage:
+    Type: String
+    Default: production
+    AllowedValues:
+      - local
+      - production
+    Description: Set the stage of the development cycle. Default is production.
+
+Mappings:
+  EnvironmentMap:
+    local:
+      production: false
+    production:
+      production: true
+
 Globals:
   Function:
-    Timeout: 30
-    MemorySize: 256
+    Timeout: 100
+    MemorySize: 512
+    Runtime: python3.12
     LoggingConfig:
       LogFormat: JSON
 
@@ -16,9 +33,8 @@ Resources:
   DeepLarvaFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: deep_larva_function/
-      Handler: app.lambda_handler
-      Runtime: python3.9
+      CodeUri: deep_larva_function
+      Handler: handler.lambda_handler
       Architectures:
         - x86_64
       Policies:
@@ -28,6 +44,14 @@ Resources:
             TableName: BoxDetectionTable
         - S3CrudPolicy:
             BucketName: deep-larva-storage
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: PowertoolsDeepLarvaServer
+          POWERTOOLS_METRICS_NAMESPACE: Powertools
+          LOG_LEVEL: INFO
+          ## Environment variables
+          LAMBDA_ENV: True
+          PRODUCTION: !FindInMap [EnvironmentMap, !Ref Stage, production]
       Events:
         ApiGateway:
           Type: "Api"
@@ -35,42 +59,13 @@ Resources:
             Path: /{proxy+}
             Method: ANY
             RestApiId: !Ref DeepLarvaApi
+      Tags:
+        LambdaPowertools: python
 
   DeepLarvaApi:
-    Type: "AWS::Serverless::Api"
-    DependsOn: ApiCWLRoleArn
+    Type: AWS::Serverless::Api
     Properties:
-      StageName: dev
-      Auth:
-        ApiKeyRequired: true
-      Cors:
-        AllowMethods: "'*'"
-        AllowHeaders: "'*'"
-        AllowOrigin: "'*'"
-      MethodSettings:
-        - LoggingLevel: INFO
-          MetricsEnabled: True
-          ResourcePath: "/*"
-          HttpMethod: "*"
-
-  ApiCWLRoleArn:
-    Type: AWS::ApiGateway::Account
-    Properties:
-      CloudWatchRoleArn: !GetAtt CloudWatchRole.Arn
-
-  CloudWatchRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          Action: "sts:AssumeRole"
-          Effect: Allow
-          Principal:
-            Service: apigateway.amazonaws.com
-      Path: /
-      ManagedPolicyArns:
-        - "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+      StageName: !Ref Stage
 
   PictureTable:
     Type: AWS::DynamoDB::Table

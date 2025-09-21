@@ -1,0 +1,15 @@
+[MASTER]
+ignore=venv
+init-hook='import sys; sys.path.append("."); sys.path.append("deep_larva_function");'
+extension-pkg-whitelist="pydantic"
+
+
+[MAIN]
+jobs=0
+
+[MESSAGES CONTROL]
+fail-under=10
+disable=missing-function-docstring,line-too-long,too-few-public-methods,no-value-for-parameter,W0511
+
+[FORMAT]
+max-line-length=88

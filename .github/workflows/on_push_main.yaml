@@ -1,0 +1,22 @@
+name: Deploy to production
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy to production
+    uses: ./.github/workflows/reusable_sam_deploy.yaml
+    with:
+      SAM_TEMPLATE: "template.yaml"
+      STACK_NAME: ${{ github.event.repository.name }}
+      ARTIFACTS_BUCKET: "aws-sam-cli-managed-default-samclisourcebucket-cnszwzvqayyy"
+    secrets:
+      PIPELINE_EXECUTION_ROLE: ${{ secrets.AWS_PROD_PIPELINE_EXECUTION_ROLE }}
+      CLOUDFORMATION_EXECUTION_ROLE: ${{ secrets.AWS_PROD_CLOUDFORMATION_EXECUTION_ROLE }}
