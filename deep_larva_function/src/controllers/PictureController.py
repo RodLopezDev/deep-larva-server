@@ -10,6 +10,20 @@ from src.services.DocumentService import DocumentService
 from src.services.PictureService import PictureService
 
 
+def convert_builder(picture: Picture):
+    def convert(input: BoxDTO) -> BoxDetection:
+        return BoxDetection(
+            id=str(uuid.uuid4()),
+            pictureId=picture.id,
+            v1=input.v1,
+            v2=input.v2,
+            v3=input.v3,
+            v4=input.v4,
+        )
+
+    return convert
+
+
 class PictureController:
     def __init__(
         self,
@@ -28,46 +42,36 @@ class PictureController:
             )
 
         bucket_name = "deep-larva-storage"
-        fileRelativePath = f"{dto.picture.uuid}-file.png"
-        processedfileRelativePath = f"{dto.picture.uuid}-processed.png"
+        file_relative_path = f"{dto.picture.uuid}-file.png"
+        processed_file_relative_path = f"{dto.picture.uuid}-processed.png"
 
         picture = self.picture.save(
             picture=Picture(
                 id=dto.picture.uuid,
                 deviceId=dto.picture.deviceId,
                 count=dto.picture.count,
-                pathFile=f"s3://{bucket_name}/{fileRelativePath}",
-                pathProcessed=f"s3://{bucket_name}/{processedfileRelativePath}",
+                pathFile=f"s3://{bucket_name}/{file_relative_path}",
+                pathProcessed=f"s3://{bucket_name}/{processed_file_relative_path}",
                 time=dto.picture.time,
                 timestamp=dto.picture.timestamp,
             )
         )
 
-        def convert(input: BoxDTO) -> BoxDetection:
-            return BoxDetection(
-                id=str(uuid.uuid4()),
-                pictureId=picture.id,
-                v1=input.v1,
-                v2=input.v2,
-                v3=input.v3,
-                v4=input.v4,
-            )
-
-        boxes = list(map(convert, dto.boxes))
+        boxes = list(map(convert_builder(picture), dto.boxes))
         for box in boxes:
             self.boxes.save(box)
 
-        originalFilePresignedUrl = self.document.create_presigned_upload_url(
-            bucket_name, fileRelativePath
+        original_file_presigned_url = self.document.create_presigned_upload_url(
+            bucket_name, file_relative_path
         )
-        processedFilePresignedUrl = self.document.create_presigned_upload_url(
-            bucket_name, processedfileRelativePath
+        processed_file_presigned_url = self.document.create_presigned_upload_url(
+            bucket_name, processed_file_relative_path
         )
 
         return NewPictureResponse(
             id=picture.id,
-            originalFileURL=originalFilePresignedUrl,
-            processedFileURL=processedFilePresignedUrl,
+            originalFileURL=original_file_presigned_url or "",
+            processedFileURL=processed_file_presigned_url or "",
             circuitBreak=False,
         )
 

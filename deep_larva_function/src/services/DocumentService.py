@@ -1,9 +1,17 @@
+"""
+Document service
+"""
+
 from typing import Optional
 
 from botocore.exceptions import ClientError
 
 
 class DocumentService:
+    """
+    Document service
+    """
+
     def __init__(self, s3) -> None:
         self.s3 = s3
 
